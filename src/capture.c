@@ -13,7 +13,12 @@
 static VtSnapshot live,published;
 static VtClocks clocks;
 static SceUID thread=-1,mutex=-1,ui_thread=-1;
-static atomic_bool finish;
+static atomic_bool finish, stress_enabled, capture_focused;
+static atomic_uint system_epoch;
+static bool stress_previous;
+void vt_runtime_stress(bool enabled) {atomic_store(&stress_enabled,enabled);}
+unsigned vt_runtime_epoch(void) {return atomic_load(&system_epoch);}
+bool vt_runtime_focused(void) {return atomic_load(&capture_focused);}
 static atomic_uint fps;
 static uint64_t started,stamp[3],seen[3],last_poll,last_sample;
 static unsigned sequence,histogram[102],polls;
@@ -43,7 +48,7 @@ static void emit(void *ctx,const char *event,const char *input,const char *state
     gmtime_r(&wall,&tm);strftime(utc,sizeof(utc),"%Y-%m-%dT%H:%M:%SZ",&tm);
     vt_log_status(&live.confirmed,&live.write_ms,&live.queue_delay_ms);
     int n=snprintf(line,sizeof(line),
-      "{\"schema\":1,\"app\":\"1.4.0\",\"session\":\"%s\",\"seq\":%u,\"utc\":\"%s\",\"mono_us\":%llu,"
+      "{\"schema\":1,\"app\":\"1.5.0\",\"session\":\"%s\",\"seq\":%u,\"utc\":\"%s\",\"mono_us\":%llu,"
       "\"event\":\"%s\",\"input\":\"%s\",\"state\":\"%s\",\"last_good_us\":%llu,"
       "\"battery_temp_c\":%s,\"thermal_rc\":%d,\"thermal_age_us\":%llu,\"battery_pct\":%d,\"external_power\":%d,"
       "\"clocks_mhz\":[%d,%d,%d],\"clock_set_rc\":[%d,%d,%d],\"clock_restore_rc\":[%d,%d,%d],"
@@ -83,6 +88,7 @@ static bool priorities(void) {
         live.priorities[2]<live.priorities[3] && live.priorities[2]<live.priorities[4] && live.priorities[2]<live.priorities[5];
 }
 static void lifecycle(const char *reason) {
+    atomic_fetch_add(&system_epoch,1);
     stop_now(); live.valid=false;touch_down=true;
     snprintf(live.status,sizeof(live.status),"Evento do sistema: stress permanece parado");
     VtInput invalid={.now=live.now,.valid=false};vt_diag_feed(&live.diagnostic,&invalid);
@@ -96,6 +102,7 @@ static int power_callback(int notify,int count,int flags,void *ctx) {
     return 0;
 }
 static void command(void) {
+    if(!atomic_load(&stress_enabled)) {touch_down=true;return;}
     if(live.front.reportNum==0) {touch_down=false;return;}
     if(touch_down) return;
     touch_down=true;
@@ -233,6 +240,12 @@ static int capture(SceSize size,void *arg) {
             vt_diag_feed(&live.diagnostic,&s);
         }
         VtInput latest=input(live.now,false,false,false);vt_diag_feed(&live.diagnostic,&latest);
+        bool enabled=atomic_load(&stress_enabled);
+        if(enabled!=stress_previous) {touch_down=true;stress_previous=enabled;}
+        if(!enabled) stop_now();
+        live.stress_idle=!enabled && !live.running && !clocks.saved && vt_workers_idle();
+        bool was_focused=atomic_exchange(&capture_focused,live.valid);
+        if(was_focused && !live.valid) atomic_fetch_add(&system_epoch,1);
         if(focused && gap<=50000 && live.fresh[1] && live.rc[1]>0) command();else touch_down=true;
         if(live.running) live.elapsed=live.now-started;
         if(!last_sample || live.now-last_sample>=VT_SECOND) {
@@ -264,7 +277,7 @@ int vt_runtime_init(void) {
     live.pad.lx=live.pad.ly=live.pad.rx=live.pad.ry=128;live.temp=-1;
     vt_diag_init(&live.diagnostic,emit,NULL);
     snprintf(session,sizeof(session),"%lld-%llu",(long long)time(NULL),(unsigned long long)sceKernelGetProcessTimeWide());
-    snprintf(live.status,sizeof(live.status),"VitaTester 1.4.0 - stress desligado");published=live;
+    snprintf(live.status,sizeof(live.status),"VitaTester 1.5.0 - stress desligado");published=live;
     mutex=sceKernelCreateMutex("vt_snapshot",0,0,NULL);if(mutex<0) return -1;
     vt_logger_start();vt_workers_start();
     thread=sceKernelCreateThread("vt_capture",capture,VT_CAPTURE_PRIORITY,65536,0,0x7,NULL);

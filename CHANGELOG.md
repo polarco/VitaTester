@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.5.0 — 2026-09-08
+
+Feature; SFO `01.50`. Physical validation of all three modules pending.
+
+- Add independent Input Test, Stress Test and Scanner modules with CMake-generated
+  registration. Preserve original diagram/assets, MIT license and upstream history.
+- Return through a three-finger central hold; isolate stress commands and block
+  transitions until clock restoration and device cleanup complete.
+- Add passive battery/system/storage/configuration/dump-metadata inventory, separate
+  SOH/calculated health, optional nominal capacity and configurable screening limit.
+- Add explicit sensor, audio, microphone, camera, Wi-Fi and read-only file stages;
+  unsupported AP scanning/Bluetooth remain unavailable with human skip verdicts.
+- Add paginated UTF-8 reports, partial/final state, collision-safe session names,
+  complete synchronized temporary replacement and retry after persistence errors.
+- Extend host tests and sanitizers to Scanner, gesture, module isolation, failed
+  cleanup, disk faults, canceled reads and preserved drawing commands. Keep SDK digest.
+
 ## 1.4.0 — 2026-09-08
 
 Feature; SFO `01.40`. Host/build validated; physical validation pending.

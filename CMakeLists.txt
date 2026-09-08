@@ -8,12 +8,12 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(VitaTester VERSION 1.4.0 LANGUAGES C)
+project(VitaTester VERSION 1.5.0 LANGUAGES C)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "VitaTester")
 set(VITA_TITLEID  "VITATESTR")
-set(VITA_VERSION  "01.40")
+set(VITA_VERSION  "01.50")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -O2 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -26,7 +26,25 @@ link_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+file(GLOB VT_MODULE_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/module_*.c")
+set(VT_REGISTRY "#include \"module.h\"\n")
+set(VT_ENTRIES "")
+foreach(source IN LISTS VT_MODULE_SOURCES)
+  get_filename_component(name "${source}" NAME_WE)
+  string(APPEND VT_REGISTRY "extern const VtModule vt_${name};\n")
+  string(APPEND VT_ENTRIES "&vt_${name},")
+endforeach()
+string(APPEND VT_REGISTRY "const VtModule *const vt_modules[]={${VT_ENTRIES}};\nconst unsigned vt_module_count=sizeof(vt_modules)/sizeof(vt_modules[0]);\n")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/module_registry.c" "${VT_REGISTRY}")
+include_directories(src)
+
 add_executable(VitaTester
+  ${VT_MODULE_SOURCES}
+  ${CMAKE_CURRENT_BINARY_DIR}/module_registry.c
+  src/original.c
+  src/navigation.c
+  src/scan_model.c
+  src/scanner.c
   src/main.c
   src/font.c
   src/capture.c
@@ -40,6 +58,15 @@ add_executable(VitaTester
 
 target_link_libraries(VitaTester
   vita2d
+  SceMotion_stub
+  SceAudio_stub
+  SceAudioIn_stub
+  SceCamera_stub
+  SceNet_stub
+  SceNetCtl_stub
+  SceKernelModulemgr_stub
+  SceSysmem_stub
+  SceVshBridge_stub
   SceDisplay_stub
   SceGxm_stub
   SceSysmodule_stub

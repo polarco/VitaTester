@@ -9,7 +9,7 @@ void vt_draw_hud(vita2d_font *font,const VtSnapshot *s,unsigned fps) {
     vita2d_font_draw_text(font,12,24,WHITE,19,"PS: voltar à LiveArea • Para fechar, encerre a bolha");
     vita2d_draw_rectangle(220,96,520,334,RGBA8(8,12,18,240));
     unsigned color=s->log_failed || s->restore_failed?RED:s->running?GREEN:WHITE;
-    vita2d_font_draw_textf(font,234,121,color,20,"VitaTester 1.4.0 | %s | %llus",s->running?"STRESS":"PARADO",(unsigned long long)(s->elapsed/VT_SECOND));
+    vita2d_font_draw_textf(font,234,121,color,20,"VitaTester 1.5.0 | %s | %llus",s->running?"STRESS":"PARADO",(unsigned long long)(s->elapsed/VT_SECOND));
     if(s->temp>=0 && s->thermal_rc>=0) vita2d_font_draw_textf(font,234,146,WHITE,18,"Bateria: %.2f °C | %d%% | AC: %s",s->temp/100.0,s->battery,s->online>0?"sim":"nao");
     else vita2d_font_draw_text(font,234,146,RED,18,"Temperatura da bateria indisponivel");
     vita2d_font_draw_textf(font,234,170,WHITE,17,"ARM/GPU/BUS: %d/%d/%d MHz | FPS %u",s->clocks[0],s->clocks[1],s->clocks[2],fps);

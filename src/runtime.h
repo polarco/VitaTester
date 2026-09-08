@@ -17,7 +17,7 @@ typedef struct {
     uint64_t now, thermal_at, elapsed, max_poll, p99_poll;
     unsigned confirmed, write_ms, queue_delay_ms, workers[3];
     int priorities[6], affinities[3];
-    bool running, log_failed, restore_failed, priority_ok, valid;
+    bool stress_idle, running, log_failed, restore_failed, priority_ok, valid;
     VtDiagnostic diagnostic;
     unsigned setting;
     char status[100];
@@ -26,6 +26,9 @@ int vt_runtime_init(void);
 void vt_runtime_snapshot(VtSnapshot *);
 void vt_runtime_shutdown(void);
 void vt_runtime_fps(unsigned);
+void vt_runtime_stress(bool);
+unsigned vt_runtime_epoch(void);
+bool vt_runtime_focused(void);
 // Logger and workers communicate only through atomics, no vita2d access.
 int vt_logger_start(void);
 SceUID vt_logger_id(void);
@@ -37,5 +40,6 @@ int vt_workers_start(void);
 SceUID vt_worker_id(int);
 unsigned vt_worker_progress(int);
 void vt_workers_enable(bool);
+bool vt_workers_idle(void);
 void vt_workers_finish(void);
 #endif

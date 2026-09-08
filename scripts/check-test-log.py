@@ -4,7 +4,7 @@ from pathlib import Path
 records = [json.loads(line) for line in Path('build-host/runtime.jsonl').read_text().splitlines()]
 assert records
 for r in records:
-    assert r['schema'] == 1 and r['app'] == '1.4.0'
+    assert r['schema'] == 1 and r['app'] == '1.5.0'
     assert r['last_good_us'] <= r['mono_us']
     assert r['last_confirmed_seq'] < r['seq']
     assert len(r['clocks_mhz']) == len(r['device_us']) == len(r['capture_rc']) == 3

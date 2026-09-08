@@ -1,8 +1,12 @@
 // Compile the production capture/control module against fake VitaSDK entry points.
 #include "../src/capture.c"
 #include <assert.h>
+#include "module.h"
+extern const VtModule vt_module_stress;
+void vt_original_draw(vita2d_font *f,const VtSnapshot *s,unsigned fps,bool stress){(void)f;(void)s;(void)fps;(void)stress;}
 static int mhz[3]={333,111,166},logger_state=1,bad_priority,queue_full,waits;
 static bool workers_on;
+static bool fail_restore;
 static unsigned worker_starts;
 static uint64_t fake_now=1000000;
 static FILE *records;
@@ -10,7 +14,7 @@ static int scenario; // 1 overlay, 2 logger failure, 3 suspend/resume callback, 
 int scePowerGetArmClockFrequency(void){return mhz[0];}
 int scePowerGetGpuClockFrequency(void){return mhz[1];}
 int scePowerGetBusClockFrequency(void){return mhz[2];}
-int scePowerSetArmClockFrequency(int n){mhz[0]=n;return 0;}
+int scePowerSetArmClockFrequency(int n){if(fail_restore && n==333)return -5;mhz[0]=n;return 0;}
 int scePowerSetGpuClockFrequency(int n){mhz[1]=n;return 0;}
 int scePowerSetBusClockFrequency(int n){mhz[2]=n;return 0;}
 int scePowerGetBatteryTemp(void){return 3250;}
@@ -22,6 +26,11 @@ int scePowerUnregisterCallback(int id){(void)id;return 0;}
 int sceKernelCreateCallback(const char *n,int x,int (*f)(int,int,int,void *),void *p){(void)n;(void)x;(void)f;(void)p;return 9;}
 int sceKernelDeleteCallback(int n){(void)n;return 0;}
 int sceKernelCheckCallback(void){
+    if(scenario==5 && fake_now>=1400000) {
+        fail_restore=fake_now<1600000;
+        vt_runtime_stress(false);
+        if(fake_now<1700000)assert(!vt_module_stress.leave(&live));
+    }
     if(scenario==3 && fake_now>=1400000 && fake_now<1408000)power_callback(0,0,SCE_POWER_CB_SYSTEM_SUSPEND,NULL);
     if(scenario==3 && fake_now>=1600000 && fake_now<1608000)power_callback(0,0,SCE_POWER_CB_SYSTEM_RESUME,NULL);
     return 0;
@@ -60,18 +69,20 @@ bool vt_log_enqueue(const char *s,unsigned n,unsigned seq,uint64_t now){(void)se
 int vt_workers_start(void){return 0;}
 SceUID vt_worker_id(int n){return 3+n;}
 unsigned vt_worker_progress(int n){(void)n;return workers_on?100:0;}
+bool vt_workers_idle(void){return !workers_on && !(scenario==5 && fake_now<1700000);}
 void vt_workers_enable(bool on){if(on && !workers_on)worker_starts++;workers_on=on;}
 void vt_workers_finish(void){assert(!workers_on && mhz[0]==333);}
 static void prepare(void){
     memset(&live,0,sizeof(live));memset(&clocks,0,sizeof(clocks));memset(stamp,0,sizeof(stamp));memset(seen,0,sizeof(seen));
     memset(histogram,0,sizeof(histogram));polls=0;last_poll=last_sample=0;
     worker_starts=0;session_logged=touch_down=false;sequence=0;logger_state=1;fake_now=1000000;atomic_store(&finish,false);
-    assert(vt_runtime_init()==0);
+    assert(vt_runtime_init()==0);vt_runtime_stress(true);
 }
 int main(void){
     records=fopen("build-host/runtime.jsonl","w");assert(records);
-    for(scenario=1;scenario<=4;scenario++){
-        prepare();capture(0,NULL);assert(worker_starts==1);
+    for(scenario=1;scenario<=6;scenario++){
+        prepare();if(scenario==6)vt_runtime_stress(false);capture(0,NULL);assert(worker_starts==(scenario==6?0u:1u));
+        if(scenario>=5)assert(vt_module_stress.leave(&live));
         assert(!workers_on && !live.running && mhz[0]==333 && mhz[1]==111 && mhz[2]==166);
         if(scenario==2)assert(live.log_failed);
         vt_runtime_shutdown();
@@ -83,7 +94,17 @@ int main(void){
     // A valid front command still stops while another input API is failing.
     live.valid=false;touch_down=false;command();assert(!live.running && mhz[0]==333);
     live.valid=true;touch_down=false;queue_full=1;command();assert(live.log_failed && !live.running && !workers_on && mhz[0]==333);
-    queue_full=0;fclose(records);
-    assert(waits==4);puts("runtime: actual control loop, overlay, callbacks, logger failure, priorities, saturation, stop with API error OK");
+    queue_full=0;
+    // Commands belonging to stress cannot start workers from menu/Input/Scanner.
+    live.log_failed=false;live.valid=true;session_logged=true;touch_down=false;
+    vt_runtime_stress(false);unsigned before=worker_starts;command();
+    assert(!live.running && worker_starts==before);
+    vt_runtime_stress(true);touch_down=false;command();assert(live.running);
+    fail_restore=true;vt_runtime_stress(false);stop_now();
+    assert(!workers_on && live.restore_failed && clocks.saved);
+    touch_down=false;command();assert(!live.running);
+    fail_restore=false;stop_now();assert(!live.restore_failed && !clocks.saved && mhz[0]==333);
+    fclose(records);
+    assert(waits==6);puts("runtime: actual control loop, overlay, callbacks, logger failure, priorities, saturation, stop with API error OK");
     return 0;
 }

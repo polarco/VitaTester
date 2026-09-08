@@ -1,0 +1,19 @@
+[
+  "vita2d_draw_texture(bg, 0, 54);",
+  "vita2d_draw_texture(analog, (85 + lx / 8), (285 + ly / 8));",
+  "vita2d_draw_texture(analog, (802 + rx / 8), (285 + ry / 8));",
+  "vita2d_draw_texture(dpad, 59, 134);",
+  "vita2d_draw_texture_rotate(dpad, 94, 231, 3.14f);",
+  "vita2d_draw_texture_rotate(dpad, 65, 203, -1.57f);",
+  "vita2d_draw_texture_rotate(dpad, 123, 203, 1.57f);",
+  "vita2d_draw_texture(cross, 830, 202);",
+  "vita2d_draw_texture(circle, 869, 165);",
+  "vita2d_draw_texture(square, 790, 165);",
+  "vita2d_draw_texture(triangle, 830, 127);",
+  "vita2d_draw_texture(select, 781, 375);",
+  "vita2d_draw_texture(start, 841, 373);",
+  "vita2d_draw_texture(ltrigger, 38, 40);",
+  "vita2d_draw_texture(rtrigger, 720, 40);",
+  "vita2d_draw_texture(frontTouch, fxTouch, fyTouch);",
+  "vita2d_draw_texture(backTouch, bxTouch, byTouch);"
+]
