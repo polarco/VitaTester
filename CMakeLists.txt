@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.16)
 
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   if(DEFINED ENV{VITASDK})
@@ -8,14 +8,14 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(VitaTester)
+project(VitaTester VERSION 1.4.0 LANGUAGES C)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "VitaTester")
 set(VITA_TITLEID  "VITATESTR")
-set(VITA_VERSION  "01.30")
+set(VITA_VERSION  "01.40")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -O2 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1")
 
@@ -29,6 +29,13 @@ link_directories(
 add_executable(VitaTester
   src/main.c
   src/font.c
+  src/capture.c
+  src/ui.c
+  src/diagnostic.c
+  src/logger.c
+  src/queue.c
+  src/safety.c
+  src/workers.c
 )
 
 target_link_libraries(VitaTester
@@ -36,10 +43,16 @@ target_link_libraries(VitaTester
   SceDisplay_stub
   SceGxm_stub
   SceSysmodule_stub
+  ScePower_stub
+  SceAppMgr_stub
+  SceIofilemgr_stub
+  SceKernelThreadMgr_stub
+  SceProcessmgr_stub
   SceCtrl_stub
   SceTouch_stub
   SceCommonDialog_stub
   freetype
+  bz2
   png
   z
   m

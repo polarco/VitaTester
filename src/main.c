@@ -7,6 +7,9 @@
 #include <psp2/kernel/processmgr.h>
 #include <psp2/touch.h>
 #include <vita2d.h>
+#include "runtime.h"
+#include "ui.h"
+#include <psp2/display.h>
 
 /* Font buffer */
 extern unsigned int basicfont_size;
@@ -19,19 +22,15 @@ signed char lx;
 signed char ly;
 signed char rx;
 signed char ry;
-int l_Distance;
-int r_Distance;
-float l_angle;
-float r_angle;
 int fxTouch;
 int fyTouch;
 int bxTouch;
 int byTouch;
 
 #define lerp(value, from_max, to_max) ((((value*10) * (to_max*10))/(from_max*10))/10)
-#define PI 3.14159265
 
-#define EXIT_COMBO (SCE_CTRL_START | SCE_CTRL_SELECT)
+
+
 
 #define BLACK   RGBA8(  0,   0,   0, 255)
 #define WHITE   RGBA8(255, 255, 255, 255)
@@ -44,9 +43,10 @@ int main()
     vita2d_init();
     vita2d_set_clear_color(BLACK);
 
-    sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
-    sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, 1);
-    sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, 1);
+    if (vt_runtime_init() < 0) { vt_runtime_shutdown(); sceKernelExitProcess(1); return 1; }
+    VtSnapshot snapshot = {0};
+    unsigned frames=0, fps=0;
+    uint64_t fps_at=sceKernelGetProcessTimeWide();
 
     vita2d_font *font = vita2d_load_font_mem(basicfont, basicfont_size);
 
@@ -66,9 +66,11 @@ int main()
     vita2d_texture *backTouch = vita2d_load_PNG_file("app0:/icons/finger_blue.png");
 
     while (1) {
-        sceCtrlPeekBufferPositive(0, &pad, 1);
-
-        if (pad.buttons == EXIT_COMBO) { break; }
+        vt_runtime_snapshot(&snapshot);
+        pad=snapshot.pad;
+        uint64_t now=sceKernelGetProcessTimeWide();
+        frames++;
+        if(now-fps_at>=1000000) {fps=(unsigned)(frames*1000000ULL/(now-fps_at));frames=0;fps_at=now;vt_runtime_fps(fps);}
 
         vita2d_start_drawing();
         vita2d_clear_screen();
@@ -77,31 +79,16 @@ int main()
         vita2d_draw_texture(bg, 0, 54);
 
         /* Display infos */
-        vita2d_font_draw_text(font, 10, 20, WHITE, 25, "VitaTester by SMOKE");
-        vita2d_font_draw_text(font, 650, 20, WHITE, 25, "Press Start + Select to exit");
+
 
         vita2d_font_draw_textf(font, 10, 525, WHITE, 25, "Left: ( %3d, %3d )", pad.lx, pad.ly);
         vita2d_font_draw_textf(font, 780, 525, WHITE, 25, "Right: ( %3d, %3d )", pad.rx, pad.ry);
 
         /* Update joystick values */
-        lx = (signed char)pad.lx - 128;
-        ly = (signed char)pad.ly - 128;
-        rx = (signed char)pad.rx - 128;
-        ry = (signed char)pad.ry - 128;
-
-        l_Distance = sqrt(pow(abs(lx),2) + pow(abs(ly),2));
-        r_Distance = sqrt(pow(abs(rx),2) + pow(abs(ry),2));
-
-        if(abs(lx)>0) {
-            l_angle = (atan(abs(ly)/abs(lx)))*(180/PI);
-        } else {
-            l_angle=90;
-        }
-        if(abs(rx)>0) {
-            r_angle = (atan(abs(ry)/abs(rx)))*(180/PI);
-        } else {
-            r_angle=90;
-        }
+        lx = (int)pad.lx - 128;
+        ly = (int)pad.ly - 128;
+        rx = (int)pad.rx - 128;
+        ry = (int)pad.ry - 128;
 
         /* Draw and move left analog stick on screen */
         vita2d_draw_texture(analog, (85 + lx / 8), (285 + ly / 8));
@@ -170,16 +157,17 @@ int main()
         }
 
         /* Draw front touch on screen */
-        sceTouchPeek(SCE_TOUCH_PORT_FRONT, &touch, 1);
-        for (int i = 0; i < touch.reportNum; i++) {
+        vt_draw_hud(font, &snapshot, fps);
+        touch=snapshot.front;
+        for (unsigned i = 0; i < touch.reportNum; i++) {
             fxTouch = (lerp(touch.report[i].x, 1919, 960) - 50);
             fyTouch = (lerp(touch.report[i].y, 1087, 544) - 56.5);
             vita2d_draw_texture(frontTouch, fxTouch, fyTouch);
         }
 
         /* Draw rear touch on screen */
-        sceTouchPeek(SCE_TOUCH_PORT_BACK, &touch, 1);
-        for (int i = 0; i < touch.reportNum; i++) {
+        touch=snapshot.back;
+        for (unsigned i = 0; i < touch.reportNum; i++) {
             bxTouch = (lerp(touch.report[i].x, 1919, 960) - 50);
             byTouch = (lerp(touch.report[i].y, 1285, 855) - 113);
             vita2d_draw_texture(backTouch, bxTouch, byTouch);
@@ -187,9 +175,11 @@ int main()
 
         vita2d_end_drawing();
         vita2d_swap_buffers();
+        sceDisplayWaitVblankStart();
     }
 
-    vita2d_fini();
+    vt_runtime_shutdown();
+    vita2d_wait_rendering_done();
 
     /* Cleanup */
     vita2d_free_font(font);
@@ -207,6 +197,7 @@ int main()
     vita2d_free_texture(frontTouch);
     vita2d_free_texture(backTouch);
 
+    vita2d_fini();
 	sceKernelExitProcess(0);
 
     return 0;

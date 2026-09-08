@@ -1,0 +1,25 @@
+name: Validate VitaTester
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  host:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/test-host.sh
+  vitasdk:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/build.sh
+      - run: sha256sum build/VitaTester.vpk > build/VitaTester.vpk.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VitaTester-1.4.0-hardware-pending
+          path: |
+            build/VitaTester.vpk
+            build/VitaTester.vpk.sha256
