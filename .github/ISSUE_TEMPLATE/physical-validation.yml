@@ -1,0 +1,93 @@
+name: Physical validation / Validação física
+description: Report real-device gates and remaining gaps / Relate portões físicos e lacunas
+title: '[Physical validation] '
+body:
+- type: markdown
+  attributes:
+    value: 'English / Português: report only what you observed. Do not attach dumps, raw recordings, credentials
+      or personal information. / Relate apenas o observado. Não anexe dumps, gravações brutas, credenciais
+      ou dados pessoais.'
+- type: input
+  id: version
+  attributes:
+    label: App version / Versão
+    description: 'For example / Por exemplo: 1.5.0; add commit if built locally / informe commit se compilado
+      localmente.'
+  validations:
+    required: true
+- type: dropdown
+  id: module
+  attributes:
+    label: Module / Módulo
+    description: Choose the affected area / Escolha a área.
+    options:
+    - Input Test
+    - Stress Test
+    - Scanner
+    - Menu / Navigation
+    - Documentation / Documentação
+  validations:
+    required: true
+- type: input
+  id: model
+  attributes:
+    label: Console model / Modelo
+    description: PCH-1000, PCH-2000, Vita TV, unknown/desconhecido or N/A (docs/host). No serial numbers
+      / Sem números de série.
+  validations:
+    required: true
+- type: input
+  id: checksum
+  attributes:
+    label: Candidate SHA-256 / SHA-256 do candidato
+    description: Hash of the installed VPK / Hash do VPK instalado.
+  validations:
+    required: true
+- type: input
+  id: environment
+  attributes:
+    label: System state / Estado do sistema
+    description: Firmware, homebrew state, relevant plugins and power source; no identifiers / Firmware,
+      homebrew, plugins relevantes e alimentação; sem identificadores.
+  validations:
+    required: true
+- type: textarea
+  id: steps
+  attributes:
+    label: Procedure and gate IDs / Procedimento e portões
+    description: Follow docs/VALIDATION.md; list exact steps, gate section/number and duration / Siga
+      docs/VALIDATION.md; informe passos, seção/número e duração.
+  validations:
+    required: true
+- type: textarea
+  id: results
+  attributes:
+    label: Results per gate / Resultados por portão
+    description: Use PASS / FAIL / SKIP / NOT RUN, with observations and error codes. Separate technical
+      errors from human verdicts / Separe erros técnicos de vereditos humanos.
+  validations:
+    required: true
+- type: textarea
+  id: cleanup
+  attributes:
+    label: Stop and cleanup / Parada e limpeza
+    description: Clock baseline/restoration, PS/LiveArea, suspend/resume and device release; mark untested
+      items / Clocks, PS/LiveArea, suspensão/retomada e liberação; indique itens não testados.
+  validations:
+    required: true
+- type: textarea
+  id: gaps
+  attributes:
+    label: Remaining coverage / Cobertura pendente
+    description: List skipped/unavailable stages and limits of this session / Liste etapas puladas/indisponíveis
+      e limites da sessão.
+  validations:
+    required: true
+- type: checkboxes
+  id: physical
+  attributes:
+    label: Evidence / Evidência
+    options:
+    - label: These observations came from a physical device; untested gates remain explicit. / Observações
+        feitas em aparelho físico; portões não testados estão explícitos.
+      required: true

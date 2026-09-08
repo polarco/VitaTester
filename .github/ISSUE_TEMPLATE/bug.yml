@@ -1,0 +1,76 @@
+name: Bug report / Relatar bug
+description: Reproducible software problem / Problema de software reproduzível
+title: '[Bug] '
+body:
+- type: markdown
+  attributes:
+    value: 'English / Português: report only what you observed. Do not attach dumps, raw recordings, credentials
+      or personal information. / Relate apenas o observado. Não anexe dumps, gravações brutas, credenciais
+      ou dados pessoais.'
+- type: input
+  id: version
+  attributes:
+    label: App version / Versão
+    description: 'For example / Por exemplo: 1.5.0; add commit if built locally / informe commit se compilado
+      localmente.'
+  validations:
+    required: true
+- type: dropdown
+  id: module
+  attributes:
+    label: Module / Módulo
+    description: Choose the affected area / Escolha a área.
+    options:
+    - Input Test
+    - Stress Test
+    - Scanner
+    - Menu / Navigation
+    - Documentation / Documentação
+  validations:
+    required: true
+- type: input
+  id: model
+  attributes:
+    label: Console model / Modelo
+    description: PCH-1000, PCH-2000, Vita TV, unknown/desconhecido or N/A (docs/host). No serial numbers
+      / Sem números de série.
+  validations:
+    required: true
+- type: input
+  id: environment
+  attributes:
+    label: Environment / Ambiente
+    description: Firmware/homebrew state or host OS; unknown is acceptable / Firmware/estado homebrew
+      ou SO host; desconhecido é válido.
+  validations:
+    required: true
+- type: textarea
+  id: steps
+  attributes:
+    label: Steps to reproduce / Passos para reproduzir
+    description: Numbered steps, including module and commands / Passos numerados com módulo e comandos.
+  validations:
+    required: true
+- type: textarea
+  id: expected
+  attributes:
+    label: Expected behavior / Resultado esperado
+    description: What should happen? / O que deveria ocorrer?
+  validations:
+    required: true
+- type: textarea
+  id: actual
+  attributes:
+    label: Observed behavior / Resultado observado
+    description: What happened, how often, and visible error codes / O que ocorreu, frequência e códigos
+      visíveis.
+  validations:
+    required: true
+- type: textarea
+  id: evidence
+  attributes:
+    label: Optional evidence / Evidência opcional
+    description: Only reviewed, redacted excerpts; no dumps or personal data / Somente trechos revisados,
+      sem dumps ou dados pessoais.
+  validations:
+    required: false

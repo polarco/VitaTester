@@ -1,4 +1,4 @@
-# Validation record — 1.4.0
+# Validation — VitaTester 1.5.0 (including inherited stress gates)
 
 ## Automated status
 
@@ -15,7 +15,7 @@
 ## Physical gates, in order
 
 1. Install the candidate only on an already homebrew-capable console. Back up
-   an existing VitaTester log if needed. Launch with load off; confirm original
+   an existing VitaTester log if needed. Launch with load off and select Stress Test; confirm original
    button indicators, analog movement and both panels. Press Start and Select
    together: they must remain diagnostic input without exiting.
 2. Record the normal baseline clocks and observe capture for 60 seconds. Verify

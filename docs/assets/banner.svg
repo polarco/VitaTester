@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+<title id="title">VitaTester — Input Test, Stress Test, Scanner</title>
+<desc id="desc">Original illustration of a handheld console and three diagnostic symbols on a dark navy background with cyan accents. Not an application screenshot.</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#081421"/><stop offset="1" stop-color="#142c3c"/></linearGradient></defs>
+<rect width="1200" height="630" rx="24" fill="url(#bg)"/>
+<g fill="none" stroke="#244557" stroke-width="1"><path d="M0 490L1200 180M0 550L1200 240M0 610L1200 300"/><circle cx="1090" cy="105" r="195"/><circle cx="1090" cy="105" r="235"/></g>
+<g font-family="DejaVu Sans, sans-serif">
+<rect x="62" y="56" width="6" height="24" rx="3" fill="#50d9ec"/>
+<text x="82" y="75" fill="#b4d1df" font-size="19" letter-spacing="4">PS VITA / HOMEBREW</text>
+<text x="60" y="155" fill="#f4fafc" font-size="68" font-weight="bold" letter-spacing="-2">VitaTester</text>
+<text x="64" y="198" fill="#b4d1df" font-size="24">Three ways to understand your Vita.</text>
+</g>
+<!-- Original console silhouette; deliberately illustrative, without app screenshots. -->
+<g transform="translate(760 74)" fill="none" stroke="#50d9ec" stroke-width="3">
+<rect x="0" y="0" width="354" height="162" rx="70" fill="#0c1d2b"/>
+<rect x="77" y="21" width="200" height="119" rx="11" stroke="#395e71"/>
+<path d="M27 65h33m-16-16v33" stroke-linecap="round"/>
+<circle cx="54" cy="112" r="12" stroke="#395e71"/><circle cx="302" cy="112" r="12" stroke="#395e71"/>
+<circle cx="308" cy="48" r="4"/><circle cx="324" cy="64" r="4"/><circle cx="308" cy="80" r="4"/><circle cx="292" cy="64" r="4"/>
+<path d="M99 85h24l12-24 17 42 19-62 20 70 17-40 13 14h34" stroke-linejoin="round"/>
+</g>
+<g font-family="DejaVu Sans, sans-serif">
+<rect x="62" y="287" width="342" height="221" rx="18" fill="#0b1b29" stroke="#345568"/>
+<g transform="translate(87 311)" fill="none" stroke="#50d9ec" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 8h18v16h16v18H42v16H24V42H8V24h16z"/></g>
+<text x="87" y="436" fill="#f4fafc" font-size="30" font-weight="bold">Input Test</text>
+<text x="87" y="476" fill="#b4d1df" font-size="18">Buttons · sticks · touch</text><rect x="429" y="287" width="342" height="221" rx="18" fill="#0b1b29" stroke="#345568"/>
+<g transform="translate(454 311)" fill="none" stroke="#50d9ec" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 38h12l9-23 14 43 13-50 12 30h12"/></g>
+<text x="454" y="436" fill="#f4fafc" font-size="30" font-weight="bold">Stress Test</text>
+<text x="454" y="476" fill="#b4d1df" font-size="18">Load · timing · logs</text><rect x="796" y="287" width="342" height="221" rx="18" fill="#0b1b29" stroke="#345568"/>
+<g transform="translate(821 311)" fill="none" stroke="#50d9ec" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 23V4h19m30 0h19v19m0 30v19H53m-30 0H4V53M12 38h52"/><circle cx="38" cy="38" r="17"/></g>
+<text x="821" y="436" fill="#f4fafc" font-size="30" font-weight="bold">Scanner</text>
+<text x="821" y="476" fill="#b4d1df" font-size="18">System · battery · reports</text><circle cx="70" cy="560" r="5" fill="#e8be77"/>
+<text x="87" y="567" fill="#e8be77" font-size="18">1.5.0 PRE-RELEASE · PHYSICAL VALIDATION PENDING</text>
+<text x="63" y="604" fill="#9db9c8" font-size="14">Original illustration / Ilustração original</text>
+<text x="850" y="600" fill="#9db9c8" font-size="16">github.com/polarco/VitaTester</text>
+</g></svg>

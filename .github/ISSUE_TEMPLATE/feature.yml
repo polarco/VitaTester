@@ -1,0 +1,60 @@
+name: Suggestion / Sugestão
+description: Propose a focused improvement / Proponha uma melhoria específica
+title: '[Suggestion] '
+body:
+- type: markdown
+  attributes:
+    value: 'English / Português: report only what you observed. Do not attach dumps, raw recordings, credentials
+      or personal information. / Relate apenas o observado. Não anexe dumps, gravações brutas, credenciais
+      ou dados pessoais.'
+- type: input
+  id: version
+  attributes:
+    label: App version / Versão
+    description: 'For example / Por exemplo: 1.5.0; add commit if built locally / informe commit se compilado
+      localmente.'
+  validations:
+    required: true
+- type: dropdown
+  id: module
+  attributes:
+    label: Module / Módulo
+    description: Choose the affected area / Escolha a área.
+    options:
+    - Input Test
+    - Stress Test
+    - Scanner
+    - Menu / Navigation
+    - Documentation / Documentação
+  validations:
+    required: true
+- type: input
+  id: model
+  attributes:
+    label: Console model / Modelo
+    description: PCH-1000, PCH-2000, Vita TV, unknown/desconhecido or N/A (docs/host). No serial numbers
+      / Sem números de série.
+  validations:
+    required: true
+- type: textarea
+  id: scenario
+  attributes:
+    label: Current scenario / Cenário atual
+    description: Steps that expose the limitation / Passos que mostram a limitação.
+  validations:
+    required: true
+- type: textarea
+  id: proposal
+  attributes:
+    label: Proposed behavior / Comportamento proposto
+    description: Describe the desired result and who it helps / Descreva o resultado desejado e quem se
+      beneficia.
+  validations:
+    required: true
+- type: textarea
+  id: alternatives
+  attributes:
+    label: Alternatives / Alternativas
+    description: Workarounds considered / Alternativas consideradas.
+  validations:
+    required: false

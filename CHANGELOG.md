@@ -1,5 +1,16 @@
 # Changelog
 
+## Presentation update — 2026-09-08
+
+Documentation/presentation correction; archive 3.4.1. Application stays 1.5.0; no new binary.
+
+- Add original vector banner and 1200×630 social artwork, labeled as illustrations.
+- Publish equivalent English/Portuguese READMEs, usage guides and FAQs with direct
+  VPK/checksum links and explicit pre-release/physical-validation status.
+- Add bilingual contribution guidance, issue forms and a pull request template.
+- Refresh repository metadata and 1.5.0 release notes; preserve tags, release
+  assets, the 1.4.0 release, runtime sources, original artwork and MIT attribution.
+
 ## 1.5.0 — 2026-09-08
 
 Feature; SFO `01.50`. Physical validation of all three modules pending.
