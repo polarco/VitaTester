@@ -7,7 +7,7 @@
 static pthread_t host_threads[3];
 static unsigned created;
 static void *run(void *arg){worker(sizeof(int),arg);free(arg);return NULL;}
-int sceKernelCreateThread(const char *n,int (*f)(SceSize,void *),int priority,unsigned stack,unsigned attr,int affinity,void *opt){(void)n;(void)f;(void)priority;(void)stack;(void)attr;(void)affinity;(void)opt;return (int)created++;}
+int sceKernelCreateThread(const char *n,int (*f)(SceSize,void *),int priority,unsigned stack,unsigned attr,int affinity,void *opt){(void)n;(void)f;(void)priority;(void)stack;(void)attr;(void)opt;assert(created<3);if(affinity!=(0x10000<<(int)created))return -999;return (int)created++;}
 int sceKernelStartThread(int id,unsigned size,void *arg){(void)size;int *index=malloc(sizeof(int));assert(index);*index=*(int *)arg;return pthread_create(&host_threads[id],NULL,run,index);}
 int sceKernelDelayThread(unsigned us){struct timespec t={.tv_sec=us/1000000,.tv_nsec=(us%1000000)*1000};return nanosleep(&t,NULL);}
 int sceKernelWaitThreadEnd(int id,void *status,unsigned *timeout){(void)status;(void)timeout;return pthread_join(host_threads[id],NULL);}

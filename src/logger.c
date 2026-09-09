@@ -37,7 +37,7 @@ static int logger(SceSize args,void *argp) {
     sceIoClose(fd);return 0;
 }
 int vt_logger_start(void) {
-    thread=sceKernelCreateThread("vt_logger",logger,VT_LOG_PRIORITY,32768,0,0x7,NULL);
+    thread=sceKernelCreateThread("vt_logger",logger,VT_LOG_PRIORITY,32768,0,SCE_KERNEL_CPU_MASK_USER_ALL,NULL);
     if(thread<0 || sceKernelStartThread(thread,0,NULL)<0) {atomic_store(&state,-1);return -1;}
     return 0;
 }

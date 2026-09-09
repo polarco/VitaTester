@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.5.1 — 2026-09-08
+
+Startup correction; SFO `01.51`. Candidate awaiting a new physical launch test.
+
+- Fix capture/logger/worker CPU affinity arguments to use VitaSDK user masks
+  `0x10000/0x20000/0x40000` and their union; validate worker readback with the same ABI.
+- Preserve initialization error codes and stage names instead of returning -1.
+- Record startup stages in append-only `ux0:data/VitaTester/startup.txt`; show
+  runtime initialization errors on screen with native PS exit behavior and no load.
+- Reject the old invalid affinity values in host mocks; cover priority, mutex,
+  capture-create and capture-start error propagation.
+- Device readback confirmed the failing installation matched 1.5.0 exactly,
+  with no stress log directory. The affinity mismatch is confirmed against the
+  pinned SDK; whether it fully explains the reported immediate exit awaits hardware.
+- Preserve the published 1.4.0/1.5.0 VPKs, artwork and MIT attribution.
+
 ## Presentation update — 2026-09-08
 
 Documentation/presentation correction; archive 3.4.1. Application stays 1.5.0; no new binary.

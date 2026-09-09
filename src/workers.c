@@ -24,7 +24,7 @@ static int worker(SceSize size,void *arg) {
 }
 int vt_workers_start(void) {
     for(int i=0;i<3;i++) {
-        threads[i]=sceKernelCreateThread("vt_stress",worker,VT_WORK_PRIORITY,16384,0,1<<i,NULL);
+        threads[i]=sceKernelCreateThread("vt_stress",worker,VT_WORK_PRIORITY,16384,0,SCE_KERNEL_CPU_MASK_USER_0<<i,NULL);
         if(threads[i]<0 || sceKernelStartThread(threads[i],sizeof(i),&i)<0) return -1;
     }return 0;
 }

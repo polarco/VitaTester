@@ -4,6 +4,7 @@
 #include "module.h"
 extern const VtModule vt_module_stress;
 void vt_original_draw(vita2d_font *f,const VtSnapshot *s,unsigned fps,bool stress){(void)f;(void)s;(void)fps;(void)stress;}
+static int init_fault;
 static int mhz[3]={333,111,166},logger_state=1,bad_priority,queue_full,waits;
 static bool workers_on;
 static bool fail_restore;
@@ -37,14 +38,14 @@ int sceKernelCheckCallback(void){
 }
 int sceKernelGetThreadInfo(int id,SceKernelThreadInfo *i){
     int p[]={64,80,96,160,160,160};if(id<0||id>5)return -1;
-    i->currentPriority=bad_priority?160:p[id];i->currentCpuAffinityMask=id>=3?1<<(id-3):7;return 0;
+    i->currentPriority=bad_priority?160:p[id];i->currentCpuAffinityMask=id>=3?0x10000<<(id-3):0x70000;return 0;
 }
 int sceKernelGetThreadId(void){return 1;}
-int sceKernelChangeThreadPriority(int id,int p){(void)id;(void)p;return 0;}
-int sceKernelCreateThread(const char *n,int (*f)(SceSize,void *),int p,unsigned sz,unsigned at,int mask,void *opt){(void)n;(void)f;(void)p;(void)sz;(void)at;(void)mask;(void)opt;return 0;}
-int sceKernelStartThread(int id,unsigned n,void *p){(void)id;(void)n;(void)p;return 0;}
+int sceKernelChangeThreadPriority(int id,int p){(void)id;(void)p;return init_fault==1?-101:0;}
+int sceKernelCreateThread(const char *n,int (*f)(SceSize,void *),int p,unsigned sz,unsigned at,int mask,void *opt){(void)n;(void)f;(void)p;(void)sz;(void)at;(void)opt;if(mask!=0x70000)return -999;return init_fault==3?-103:0;}
+int sceKernelStartThread(int id,unsigned n,void *p){(void)id;(void)n;(void)p;return init_fault==4?-104:0;}
 int sceKernelWaitThreadEnd(int id,void *p,unsigned *t){(void)id;(void)p;(void)t;assert(!workers_on && mhz[0]==333);waits++;return 0;}
-int sceKernelCreateMutex(const char *n,unsigned a,int c,void *o){(void)n;(void)a;(void)c;(void)o;return 8;}
+int sceKernelCreateMutex(const char *n,unsigned a,int c,void *o){(void)n;(void)a;(void)c;(void)o;return init_fault==2?-102:8;}
 int sceKernelTryLockMutex(int id,int n){(void)id;(void)n;return 0;}
 int sceKernelUnlockMutex(int id,int n){(void)id;(void)n;return 0;}
 int sceKernelDelayThreadCB(unsigned us){if(scenario>=1 && scenario<=3 && fake_now>=1650000)assert(!live.running && !workers_on && mhz[0]==333);fake_now+=us;if(fake_now>=2200000)atomic_store(&finish,true);return 0;}
@@ -79,6 +80,13 @@ static void prepare(void){
     assert(vt_runtime_init()==0);vt_runtime_stress(true);
 }
 int main(void){
+    const char *stages[]={"", "ui_priority", "snapshot_mutex", "capture_create", "capture_start"};
+    for(init_fault=1;init_fault<=4;init_fault++) {
+        assert(vt_runtime_init()==-100-init_fault);
+        assert(strcmp(vt_runtime_init_stage(),stages[init_fault])==0);
+    }
+    init_fault=0;
+
     records=fopen("build-host/runtime.jsonl","w");assert(records);
     for(scenario=1;scenario<=6;scenario++){
         prepare();if(scenario==6)vt_runtime_stress(false);capture(0,NULL);assert(worker_starts==(scenario==6?0u:1u));

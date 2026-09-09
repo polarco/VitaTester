@@ -48,7 +48,7 @@ static void emit(void *ctx,const char *event,const char *input,const char *state
     gmtime_r(&wall,&tm);strftime(utc,sizeof(utc),"%Y-%m-%dT%H:%M:%SZ",&tm);
     vt_log_status(&live.confirmed,&live.write_ms,&live.queue_delay_ms);
     int n=snprintf(line,sizeof(line),
-      "{\"schema\":1,\"app\":\"1.5.0\",\"session\":\"%s\",\"seq\":%u,\"utc\":\"%s\",\"mono_us\":%llu,"
+      "{\"schema\":1,\"app\":\"1.5.1\",\"session\":\"%s\",\"seq\":%u,\"utc\":\"%s\",\"mono_us\":%llu,"
       "\"event\":\"%s\",\"input\":\"%s\",\"state\":\"%s\",\"last_good_us\":%llu,"
       "\"battery_temp_c\":%s,\"thermal_rc\":%d,\"thermal_age_us\":%llu,\"battery_pct\":%d,\"external_power\":%d,"
       "\"clocks_mhz\":[%d,%d,%d],\"clock_set_rc\":[%d,%d,%d],\"clock_restore_rc\":[%d,%d,%d],"
@@ -82,7 +82,7 @@ static bool priorities(void) {
         SceKernelThreadInfo info;memset(&info,0,sizeof(info));info.size=sizeof(info);
         if(ids[i]<0 || sceKernelGetThreadInfo(ids[i],&info)<0) return false;
         live.priorities[i]=info.currentPriority;
-        if(i>=3) { live.affinities[i-3]=info.currentCpuAffinityMask;if(info.currentCpuAffinityMask!=(1<<(i-3))) return false; }
+        if(i>=3) { live.affinities[i-3]=info.currentCpuAffinityMask;if(info.currentCpuAffinityMask!=(SCE_KERNEL_CPU_MASK_USER_0<<(i-3))) return false; }
     }
     return live.priorities[0]<live.priorities[1] && live.priorities[1]<live.priorities[2] &&
         live.priorities[2]<live.priorities[3] && live.priorities[2]<live.priorities[4] && live.priorities[2]<live.priorities[5];
@@ -271,17 +271,27 @@ static int capture(SceSize size,void *arg) {
     live.now=sceKernelGetProcessTimeWide();stop_now();emit(NULL,"session","all","end",live.now,0);publish();
     if(callback>=0) {scePowerUnregisterCallback(callback);sceKernelDeleteCallback(callback);}return 0;
 }
+static const char *init_stage="not_started";
+const char *vt_runtime_init_stage(void) {return init_stage;}
 int vt_runtime_init(void) {
-    ui_thread=sceKernelGetThreadId();sceKernelChangeThreadPriority(ui_thread,VT_UI_PRIORITY);
+    init_stage="ui_priority";
+    ui_thread=sceKernelGetThreadId();
+    int rc=sceKernelChangeThreadPriority(ui_thread,VT_UI_PRIORITY);
+    if(rc<0) return rc;
     clocks.get=get_clock;clocks.set=set_clock;
     live.pad.lx=live.pad.ly=live.pad.rx=live.pad.ry=128;live.temp=-1;
     vt_diag_init(&live.diagnostic,emit,NULL);
     snprintf(session,sizeof(session),"%lld-%llu",(long long)time(NULL),(unsigned long long)sceKernelGetProcessTimeWide());
-    snprintf(live.status,sizeof(live.status),"VitaTester 1.5.0 - stress desligado");published=live;
-    mutex=sceKernelCreateMutex("vt_snapshot",0,0,NULL);if(mutex<0) return -1;
+    snprintf(live.status,sizeof(live.status),"VitaTester 1.5.1 - stress desligado");published=live;
+    init_stage="snapshot_mutex";
+    mutex=sceKernelCreateMutex("vt_snapshot",0,0,NULL);if(mutex<0) return mutex;
     vt_logger_start();vt_workers_start();
-    thread=sceKernelCreateThread("vt_capture",capture,VT_CAPTURE_PRIORITY,65536,0,0x7,NULL);
-    if(thread<0 || sceKernelStartThread(thread,0,NULL)<0) return -1;
+    init_stage="capture_create";
+    thread=sceKernelCreateThread("vt_capture",capture,VT_CAPTURE_PRIORITY,65536,0,SCE_KERNEL_CPU_MASK_USER_ALL,NULL);
+    if(thread<0) return thread;
+    init_stage="capture_start";
+    rc=sceKernelStartThread(thread,0,NULL);if(rc<0) return rc;
+    init_stage="ready";
     return 0;
 }
 void vt_runtime_snapshot(VtSnapshot *out) {

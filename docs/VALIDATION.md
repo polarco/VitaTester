@@ -23,7 +23,7 @@
    independent activity. Check battery temperature against the battery reading
    from another trusted tool, accounting for sampling time.
 3. Start stress by touch. Verify priorities `capture < UI < logger < workers`
-   numerically, worker affinities `1/2/4`, all three progress counters increasing,
+   numerically, worker affinities `0x10000/0x20000/0x40000` (SDK user CPU masks), all three progress counters increasing,
    and effective clocks `444/222/222`. Compare normal/stress FPS and polling.
    **Acceptance: p99 polling ≤20 ms** in each mode; every gap >50 ms must be
    marked inconclusive. Log all sample counts and API returns.

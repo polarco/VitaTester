@@ -3,6 +3,7 @@
 #include <psp2/ctrl.h>
 #include <psp2/touch.h>
 #include <psp2/types.h>
+#include <psp2/kernel/cpu.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "diagnostic.h"
@@ -23,6 +24,7 @@ typedef struct {
     char status[100];
 } VtSnapshot;
 int vt_runtime_init(void);
+const char *vt_runtime_init_stage(void);
 void vt_runtime_snapshot(VtSnapshot *);
 void vt_runtime_shutdown(void);
 void vt_runtime_fps(unsigned);
