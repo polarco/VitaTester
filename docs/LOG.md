@@ -52,3 +52,11 @@ and syncs a newline, so a partial last JSON record cannot merge with its session
 A reader should skip blank lines and explicitly report malformed old records.
 Neither sync nor process cleanup guarantees survival after kernel failure or
 power loss.
+
+## Timestamp handling in 1.5.2
+
+Zero and signed-negative timestamps stored in unsigned SDK fields are excluded
+before the chronological merge and watermark/freshness updates. `capture_rc`
+still records raw API counts. A positive count containing only unusable history
+is `delayed_inconclusive`, not a failed API call. Valid later samples recover;
+invalid entries never become the retained `device_us` values.

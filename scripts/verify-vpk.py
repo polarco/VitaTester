@@ -33,10 +33,10 @@ def verify(path):
             name = data[keys+k:data.index(b'\0', keys+k)].decode()
             assert length <= capacity and values + offset + capacity <= len(data)
             fields[name] = data[values+offset:values+offset+length].rstrip(b'\0')
-        assert fields['APP_VER'] == b'01.51', fields
+        assert fields['APP_VER'] == b'01.52', fields
         assert fields['TITLE_ID'] == b'VITATESTR', fields
         assert fields['TITLE'] == b'VitaTester', fields
-    print('VPK: CRC, exact asset inventory, ELF/SELF, Title ID and SFO 01.51 OK')
+    print('VPK: CRC, exact asset inventory, ELF/SELF, Title ID and SFO 01.52 OK')
 
 
 if __name__ == '__main__':

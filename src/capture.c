@@ -48,7 +48,7 @@ static void emit(void *ctx,const char *event,const char *input,const char *state
     gmtime_r(&wall,&tm);strftime(utc,sizeof(utc),"%Y-%m-%dT%H:%M:%SZ",&tm);
     vt_log_status(&live.confirmed,&live.write_ms,&live.queue_delay_ms);
     int n=snprintf(line,sizeof(line),
-      "{\"schema\":1,\"app\":\"1.5.1\",\"session\":\"%s\",\"seq\":%u,\"utc\":\"%s\",\"mono_us\":%llu,"
+      "{\"schema\":1,\"app\":\"1.5.2\",\"session\":\"%s\",\"seq\":%u,\"utc\":\"%s\",\"mono_us\":%llu,"
       "\"event\":\"%s\",\"input\":\"%s\",\"state\":\"%s\",\"last_good_us\":%llu,"
       "\"battery_temp_c\":%s,\"thermal_rc\":%d,\"thermal_age_us\":%llu,\"battery_pct\":%d,\"external_power\":%d,"
       "\"clocks_mhz\":[%d,%d,%d],\"clock_set_rc\":[%d,%d,%d],\"clock_restore_rc\":[%d,%d,%d],"
@@ -189,6 +189,21 @@ static int capture(SceSize size,void *arg) {
         live.rc[2]=sceTouchPeek(SCE_TOUCH_PORT_BACK,backs,64);
         int counts[3];
         for(int i=0;i<3;i++) {counts[i]=live.rc[i]>0 && live.rc[i]<=64?live.rc[i]:0;live.fresh[i]=0;}
+        bool api_unavailable=!counts[0] || !counts[1] || !counts[2];
+        /* Startup history can contain negative timestamps in the unsigned SDK
+           field (observed as UINT64_MAX-24, -26, -29). Never let those entries
+           advance the watermark: all subsequent live samples would look old.
+           Keep raw API counts in rc[]; only usable entries enter the merge. */
+        int kept=0;
+        for(int i=0;i<counts[0];i++)
+            if(pads[i].timeStamp>0 && pads[i].timeStamp<=INT64_MAX) pads[kept++]=pads[i];
+        counts[0]=kept;kept=0;
+        for(int i=0;i<counts[1];i++)
+            if(fronts[i].timeStamp>0 && fronts[i].timeStamp<=INT64_MAX) fronts[kept++]=fronts[i];
+        counts[1]=kept;kept=0;
+        for(int i=0;i<counts[2];i++)
+            if(backs[i].timeStamp>0 && backs[i].timeStamp<=INT64_MAX) backs[kept++]=backs[i];
+        counts[2]=kept;
         uint64_t newest=0;
         for(int i=0;i<counts[0];i++) if(pads[i].timeStamp>newest) newest=pads[i].timeStamp;
         for(int i=0;i<counts[1];i++) if(fronts[i].timeStamp>newest) newest=fronts[i].timeStamp;
@@ -201,7 +216,7 @@ static int capture(SceSize size,void *arg) {
             if(live.fresh[i]) seen[i]=live.now;
             if(!counts[i] || !seen[i] || live.now-seen[i]>50000) live.valid=false;
         }
-        int quality=!focused?1:(!counts[0] || !counts[1] || !counts[2])?2:!live.valid?3:0;
+        int quality=!focused?1:api_unavailable?2:!live.valid?3:0;
         if(quality!=last_quality) {
             emit(NULL,"capture_state","all",quality==0?"valid":quality==1?"system_intercepted":quality==2?"api_error":"delayed_inconclusive",live.now,0);
             last_quality=quality;
@@ -282,7 +297,7 @@ int vt_runtime_init(void) {
     live.pad.lx=live.pad.ly=live.pad.rx=live.pad.ry=128;live.temp=-1;
     vt_diag_init(&live.diagnostic,emit,NULL);
     snprintf(session,sizeof(session),"%lld-%llu",(long long)time(NULL),(unsigned long long)sceKernelGetProcessTimeWide());
-    snprintf(live.status,sizeof(live.status),"VitaTester 1.5.1 - stress desligado");published=live;
+    snprintf(live.status,sizeof(live.status),"VitaTester 1.5.2 - stress desligado");published=live;
     init_stage="snapshot_mutex";
     mutex=sceKernelCreateMutex("vt_snapshot",0,0,NULL);if(mutex<0) return mutex;
     vt_logger_start();vt_workers_start();

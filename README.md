@@ -13,10 +13,10 @@ Three independent diagnostic modules for PS Vita, built on SMOKE’s VitaTester.
 
 ## Download
 
-> **Startup fix candidate: 1.5.1.** The 1.5.0 package was reported to return to
-> LiveArea immediately on a physical Vita. This source tree corrects thread CPU
-> affinity masks and records startup stages; the new physical launch test is pending.
-> Published 1.5.0 downloads below remain unchanged. See [startup troubleshooting](docs/STARTUP.md).
+> **Input fix candidate: 1.5.2.** Version 1.5.1 now opens the menu on a physical
+> Vita, but startup-history timestamps blocked touch input. This source tree fixes
+> that capture issue; the new touch test is pending. Published 1.5.0 downloads below
+> remain unchanged. See [troubleshooting](docs/STARTUP.md).
 
 **[Download VitaTester 1.5.0 (.vpk)](https://github.com/polarco/VitaTester/releases/download/v1.5.0/VitaTester-1.5.0.vpk)** ·
 [SHA-256 file](https://github.com/polarco/VitaTester/releases/download/v1.5.0/VitaTester-1.5.0.vpk.sha256) ·

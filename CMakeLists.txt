@@ -8,12 +8,12 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(VitaTester VERSION 1.5.1 LANGUAGES C)
+project(VitaTester VERSION 1.5.2 LANGUAGES C)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "VitaTester")
 set(VITA_TITLEID  "VITATESTR")
-set(VITA_VERSION  "01.51")
+set(VITA_VERSION  "01.52")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -O2 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

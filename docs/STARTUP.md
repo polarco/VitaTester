@@ -51,3 +51,34 @@ A successful launch only closes this startup gate. Stress, Scanner and lifecycle
 validation remain pending. Published releases 1.4.0 and 1.5.0 are preserved.
 Abrir com sucesso encerra apenas o portão de inicialização. Stress, Scanner e
 ciclo de vida continuam pendentes; releases 1.4.0 e 1.5.0 preservadas.
+
+## 1.5.2 — frozen menu / Menu sem resposta — 2026-09-11
+
+Physical launch of 1.5.1 succeeded. Its log reached `main`, `graphics`, `font`,
+`ready` and `menu`. Controller/front/rear API returns were all 64, focus and
+interception calls succeeded, and overlay/interception were clear. However,
+the retained device timestamps were `18446744073709551591`,
+`18446744073709551589` and `18446744073709551586` (unsigned representations
+of -25, -27 and -30). Treating them as the newest history permanently rejected
+later positive timestamps; fresh sample counts stayed zero and input invalid.
+
+The 1.5.2 fix rejects zero and signed-negative history timestamps before the
+merge and freshness calculations. Raw API counts remain in the log. Empty valid
+history remains inconclusive, and valid samples recover automatically. Existing
+focus/stale-capture gates remain enforced. Host regression failed on 1.5.1 and
+now covers mixed histories, invalid-only startup, later invalid intervals,
+recovery, front contacts and commands. Physical touch validation remains pending.
+
+A 1.5.1 abriu o menu fisicamente. O log mostrou APIs/foco corretos, mas timestamps
+negativos convertidos em números positivos enormes bloquearam amostras seguintes.
+A 1.5.2 filtra essas entradas antes de atualizar a captura; mantém os retornos
+brutos no log e todas as proteções existentes. O teste reproduziu a falha antiga
+ e cobre recuperação e contatos novos. Falta confirmar o toque no aparelho.
+
+Install `VitaTester-1.5.2.vpk`, close/reopen the bubble and touch Input Test with
+one finger, lifting it between commands. Keep stress off. If the menu still
+fails, reopen FTP for `startup.txt` and `stresslog.txt`; do not delete older logs.
+
+Instale `VitaTester-1.5.2.vpk`, feche/reabra a bolha e toque em Input Test com um
+dedo, soltando entre comandos. Mantenha stress desligado. Se o menu continuar
+bloqueado, reabra FTP para reler os registros; preserve os logs anteriores.

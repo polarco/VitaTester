@@ -13,10 +13,10 @@ Três módulos independentes de diagnóstico para PS Vita, baseados no VitaTeste
 
 ## Download
 
-> **Candidato de correção: 1.5.1.** Foi relatado retorno imediato à LiveArea com
-> a 1.5.0 em Vita físico. Este código corrige as máscaras de CPU das threads e
-> registra a inicialização; o novo teste de abertura está pendente.
-> Os downloads publicados da 1.5.0 abaixo permanecem intactos. Veja a [triagem](docs/STARTUP.md).
+> **Candidato de correção: 1.5.2.** A 1.5.1 já abre o menu no Vita físico,
+> mas timestamps do histórico inicial bloquearam os toques. Este código corrige
+> a captura; o novo teste de toque está pendente. Os downloads publicados da 1.5.0
+> abaixo permanecem intactos. Veja a [triagem](docs/STARTUP.md).
 
 **[Baixar VitaTester 1.5.0 (.vpk)](https://github.com/polarco/VitaTester/releases/download/v1.5.0/VitaTester-1.5.0.vpk)** ·
 [Arquivo SHA-256](https://github.com/polarco/VitaTester/releases/download/v1.5.0/VitaTester-1.5.0.vpk.sha256) ·

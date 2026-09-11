@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.5.2 — 2026-09-11
+
+Capture correction; SFO `01.52`. Physical menu interaction retest pending.
+
+- Filter zero/negative startup-history timestamps represented in unsigned SDK
+  fields before merging controller/front/rear streams or advancing watermarks.
+- Preserve raw API return counts and classify invalid timestamp-only histories
+  as inconclusive; normal samples can recover without inheriting a poisoned watermark.
+- Reproduce the hardware failure using 64-entry histories in production capture
+  tests, then verify fresh front contacts, command handling and recovery after
+  an invalid-only interval. Reject negative timestamps in generated JSONL.
+- Hardware confirmed 1.5.1 reaches the menu; logs showed successful APIs and
+  foreground state but watermarks near UINT64_MAX blocked every later input.
+- Keep all existing focus, stale-capture and stress-start gates. Prior releases
+  remain intact; this candidate still requires device validation.
+
 ## 1.5.1 — 2026-09-08
 
 Startup correction; SFO `01.51`. Candidate awaiting a new physical launch test.

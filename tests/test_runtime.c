@@ -48,18 +48,39 @@ int sceKernelWaitThreadEnd(int id,void *p,unsigned *t){(void)id;(void)p;(void)t;
 int sceKernelCreateMutex(const char *n,unsigned a,int c,void *o){(void)n;(void)a;(void)c;(void)o;return init_fault==2?-102:8;}
 int sceKernelTryLockMutex(int id,int n){(void)id;(void)n;return 0;}
 int sceKernelUnlockMutex(int id,int n){(void)id;(void)n;return 0;}
-int sceKernelDelayThreadCB(unsigned us){if(scenario>=1 && scenario<=3 && fake_now>=1650000)assert(!live.running && !workers_on && mhz[0]==333);fake_now+=us;if(fake_now>=2200000)atomic_store(&finish,true);return 0;}
+int sceKernelDelayThreadCB(unsigned us){
+    if(scenario==7 || scenario==8) {
+        for(int i=0;i<3;i++) assert(stamp[i]<=fake_now);
+        if(fake_now<1100000 || (scenario==8 && fake_now>=1400000 && fake_now<1500000))
+            assert(!live.valid);
+        else {
+            assert(live.valid);
+            if(fake_now>=1200000 && fake_now<1216000) assert(live.front.reportNum==1);
+        }
+    }
+    if(scenario>=1 && scenario<=3 && fake_now>=1650000) {assert(!live.running && !workers_on && mhz[0]==333);}
+    fake_now+=us;if(fake_now>=2200000)atomic_store(&finish,true);return 0;}
 uint64_t sceKernelGetProcessTimeWide(void){return fake_now;}
 int _sceAppMgrGetAppState(SceAppMgrAppState *a,size_t s,unsigned v){(void)s;(void)v;a->isSystemUiOverlaid=scenario==1 && fake_now>=1400000 && fake_now<1600000;return 0;}
 int sceAppMgrReceiveSystemEvent(SceAppMgrSystemEvent *e){e->systemEvent=SCE_APPMGR_SYSTEMEVENT_ON_RESUME;return 0;}
 int sceCtrlGetButtonIntercept(int *p){*p=0;return 0;}
 int sceCtrlSetSamplingMode(int m){(void)m;return 0;}
 int sceTouchSetSamplingState(int p,int m){(void)p;(void)m;return 0;}
-int sceCtrlPeekBufferPositive(int p,SceCtrlData *c,int n){(void)p;(void)n;*c=(SceCtrlData){.timeStamp=(scenario==4 && fake_now>=1400000)?1400000:fake_now,.lx=128,.ly=128,.rx=128,.ry=128};return 1;}
+/* Model the 64-entry history observed on hardware: signed-negative startup
+   timestamps represented in unsigned SDK fields, then normal fresh samples. */
+static int history_index(void) {return scenario>=7?63:0;}
+static bool invalid_history_only(void) {
+    return scenario>=7 && (fake_now<1100000 || (scenario==8 && fake_now>=1400000 && fake_now<1500000));
+}
+int sceCtrlPeekBufferPositive(int p,SceCtrlData *c,int n){(void)p;assert(n==64);
+    for(int i=0;i<history_index();i++) c[i]=(SceCtrlData){.timeStamp=UINT64_MAX-(unsigned)i};
+    c+=history_index();*c=(SceCtrlData){.timeStamp=(scenario==4 && fake_now>=1400000)?1400000:fake_now,.lx=128,.ly=128,.rx=128,.ry=128};if(invalid_history_only())c->timeStamp=0;return history_index()+1;}
 int sceTouchPeek(int p,SceTouchData *t,unsigned n){
-    (void)n;memset(t,0,sizeof(*t));t->timeStamp=fake_now;
+    assert(n==64);
+    for(int i=0;i<history_index();i++) t[i]=(SceTouchData){.timeStamp=UINT64_MAX-(unsigned)(i+p+2),.reportNum=1};
+    t+=history_index();memset(t,0,sizeof(*t));t->timeStamp=invalid_history_only()?0:fake_now;
     if(p==0 && fake_now>=1200000 && fake_now<1216000){t->reportNum=1;t->report[0].x=100;t->report[0].y=950;}
-    return 1;
+    return history_index()+1;
 }
 int vt_logger_start(void){return 0;}
 SceUID vt_logger_id(void){return 2;}
@@ -88,9 +109,9 @@ int main(void){
     init_fault=0;
 
     records=fopen("build-host/runtime.jsonl","w");assert(records);
-    for(scenario=1;scenario<=6;scenario++){
-        prepare();if(scenario==6)vt_runtime_stress(false);capture(0,NULL);assert(worker_starts==(scenario==6?0u:1u));
-        if(scenario>=5)assert(vt_module_stress.leave(&live));
+    for(scenario=1;scenario<=8;scenario++){
+        prepare();if(scenario==6 || scenario==8)vt_runtime_stress(false);capture(0,NULL);assert(worker_starts==((scenario==6 || scenario==8)?0u:1u));
+        if(scenario==5 || scenario==6 || scenario==8)assert(vt_module_stress.leave(&live));
         assert(!workers_on && !live.running && mhz[0]==333 && mhz[1]==111 && mhz[2]==166);
         if(scenario==2)assert(live.log_failed);
         vt_runtime_shutdown();
@@ -113,6 +134,6 @@ int main(void){
     touch_down=false;command();assert(!live.running);
     fail_restore=false;stop_now();assert(!live.restore_failed && !clocks.saved && mhz[0]==333);
     fclose(records);
-    assert(waits==6);puts("runtime: actual control loop, overlay, callbacks, logger failure, priorities, saturation, stop with API error OK");
+    assert(waits==8);puts("runtime: actual control loop, overlay, callbacks, logger failure, priorities, saturation, stop with API error OK");
     return 0;
 }

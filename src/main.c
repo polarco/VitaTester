@@ -13,7 +13,7 @@ static void boot_record(const char *stage,int rc) {
     sceIoMkdir("ux0:data",0777);sceIoMkdir("ux0:data/VitaTester",0777);
     SceUID fd=sceIoOpen("ux0:data/VitaTester/startup.txt",SCE_O_WRONLY|SCE_O_CREAT|SCE_O_APPEND,0666);
     if(fd<0)return;
-    char line[160];int n=snprintf(line,sizeof(line),"1.5.1 %s 0x%08X\n",stage,(unsigned)rc);
+    char line[160];int n=snprintf(line,sizeof(line),"1.5.2 %s 0x%08X\n",stage,(unsigned)rc);
     if(n>0 && n<(int)sizeof(line)) {
         int off=0;while(off<n){int written=sceIoWrite(fd,line+off,n-off);if(written<=0)break;off+=written;}
         sceIoSyncByFd(fd,0);
@@ -23,7 +23,7 @@ static void boot_record(const char *stage,int rc) {
 static void init_error(vita2d_font *font,const char *stage,int rc) {
     for(;;) {
         vita2d_start_drawing();vita2d_clear_screen();
-        vita2d_font_draw_text(font,60,120,0xffffffff,30,"VitaTester 1.5.1 - falha ao iniciar");
+        vita2d_font_draw_text(font,60,120,0xffffffff,30,"VitaTester 1.5.2 - falha ao iniciar");
         vita2d_font_draw_textf(font,60,200,0xffffffff,24,"Etapa: %s | erro: 0x%08X",stage,(unsigned)rc);
         vita2d_font_draw_text(font,60,290,0xffffffff,22,"Informe esta etapa e codigo. Nenhuma carga foi iniciada.");
         vita2d_font_draw_text(font,60,360,0xffffffff,22,"PS: LiveArea. Para fechar, encerre a bolha.");
@@ -76,7 +76,7 @@ int main(void) {
         vita2d_start_drawing();vita2d_clear_screen();
         if(active) active->render(font,&s,fps);
         else {
-            vita2d_font_draw_text(font,210,80,0xffffffff,36,"VitaTester 1.5.1");
+            vita2d_font_draw_text(font,210,80,0xffffffff,36,"VitaTester 1.5.2");
             for(unsigned i=0;i<vt_module_count;i++) {
                 vita2d_draw_rectangle(210,150+i*80,540,65,RGBA8(32,53,72,255));
                 vita2d_font_draw_text(font,235,192+i*80,0xffffffff,27,vt_modules[i]->name);
